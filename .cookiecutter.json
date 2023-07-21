@@ -1,0 +1,15 @@
+{
+  "_output_dir": "/userdata/akhambhati/Repos/presidiodbs.github.com",
+  "_repo_dir": "/home/akhambhati/.cookiecutters/cookiecutter-hypermodern-python",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Ankit Khambhati",
+  "copyright_year": "2023",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "akhambhati@gmail.com",
+  "friendly_name": "NKHDF5",
+  "github_user": "akhambhati",
+  "license": "Apache-2.0",
+  "package_name": "nkhdf5",
+  "project_name": "python-nkhdf5",
+  "version": "2023.07.20"
+}
