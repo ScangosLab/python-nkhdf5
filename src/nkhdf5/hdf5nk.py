@@ -46,12 +46,14 @@ class NKElectricalSeriesMap(ElectricalSeriesMap):
      default_attribute_names: Mapping[str, str] = ElectricalSeriesMap.default_attribute_names | {
              "filter_lowpass": "filter_lowpass",
              "filter_highpass": "filter_highpass",
+             "channel_type": "channel_type",
              "channel_name": "channel_name",
              "channel_count": "channel_count"}
 
     default_attributes: Mapping[str, Any] = ElectricalSeriesMap.default_attributes | {
              "filter_lowpass": 0,
              "filter_highpass": 0,
+             "channel_type": h5py.Empty("str"),
              "channel_name": h5py.Empty("str"),
              "channel_count": 0}
 
@@ -94,8 +96,8 @@ class HDF5NKMap(HDF5EEGMap):
     }
 
 
-class HDF5XLTEK(HDF5EEG):
-    """A HDF5 file which contains data for XLTEK EEG data.
+class HDF5NK(HDF5EEG):
+    """A HDF5 file which contains data for Nihon Kohden EEG data.
 
     Class Attributes:
         _registration: Determines if this class will be included in class registry.
@@ -106,210 +108,10 @@ class HDF5XLTEK(HDF5EEG):
     """
 
     _registration: bool = True
-    _VERSION_TYPE: VersionType = VersionType(name="HDF5XLTEK", class_=TriNumberVersion)
+    _VERSION_TYPE: VersionType = VersionType(name="HDF5NK", class_=TriNumberVersion)
     VERSION: Version = TriNumberVersion(0, 0, 0)
-    FILE_TYPE: str = "XLTEK_EEG"
-    default_map: HDF5Map = HDF5XLTEKMap()
-
-    # File Validation
-    @singlekwargdispatch("file")
-    @classmethod
-    def validate_file_type(cls, file: pathlib.Path | str | HDF5File | h5py.File) -> bool:
-        """Checks if the given file or path is a valid type.
-
-        Args:
-            file: The path or file object.
-
-        Returns:
-            If this is a valid file type.
-        """
-        raise TypeError(f"{type(file)} is not a valid type for validate_file_type.")
-
-    @validate_file_type.register
-    @classmethod
-    def _validate_file_type(cls, file: pathlib.Path) -> bool:
-        """Checks if the given path is a valid type.
-
-        Args:
-            file: The path.
-
-        Returns:
-            If this is a valid file type.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-
-        if file.is_file():
-            try:
-                with h5py.File(file) as obj:
-                    if t_name in obj.attrs:
-                        return cls.FILE_TYPE == obj.attrs[t_name]
-                    else:
-                        return cls.get_version_class(TriNumberVersion(0, 1, 0)).validate_file_type(obj)
-            except OSError:
-                return False
-        else:
-            return False
-
-    @validate_file_type.register
-    @classmethod
-    def _validate_file_type(cls, file: str) -> bool:
-        """Checks if the given path is a valid type.
-
-        Args:
-            file: The path.
-
-        Returns:
-            If this is a valid file type.
-        """
-        t_name = cls.default_map.attribute_names.get["file_type"]
-
-        file = pathlib.Path(file)
-
-        if file.is_file():
-            try:
-                with h5py.File(file) as obj:
-                    if t_name in obj.attrs:
-                        return cls.FILE_TYPE == obj.attrs[t_name]
-                    else:
-                        return cls.get_version_class(TriNumberVersion(0, 1, 0)).validate_file_type(obj)
-            except OSError:
-                return False
-        else:
-            return False
-
-    @validate_file_type.register
-    @classmethod
-    def _validate_file_type(cls, file: HDF5File) -> bool:
-        """Checks if the given file is a valid type.
-
-        Args:
-            file: The file object.
-
-        Returns:
-            If this is a valid file type.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-        file = file._file
-        if t_name in file.attrs:
-            return cls.FILE_TYPE == file.attrs[t_name]
-        else:
-            return cls.get_version_class(TriNumberVersion(0, 1, 0)).validate_file_type(file)
-
-    @validate_file_type.register
-    @classmethod
-    def _validate_file_type(cls, file: h5py.File) -> bool:
-        """Checks if the given file is a valid type.
-
-        Args:
-            file: The file fileect.
-
-        Returns:
-            If this is a valid file type.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-        if t_name in file.attrs:
-            return cls.FILE_TYPE == file.attrs[t_name]
-        else:
-            return cls.get_version_class(TriNumberVersion(0, 1, 0)).validate_file_type(file)
-
-    @singlekwargdispatch("file")
-    @classmethod
-    def new_validated(cls, file: pathlib.Path | str | HDF5File | h5py.File, **kwargs: Any) -> Union["HDF5XLTEK", None]:
-        """Checks if the given file or path is a valid type and returns the file if valid.
-
-        Args:
-            file: The path or file object.
-
-        Returns:
-            The file or None.
-        """
-        raise TypeError(f"{type(file)} is not a valid type for new_validate.")
-
-    @new_validated.register
-    @classmethod
-    def _new_validated(cls, file: pathlib.Path, **kwargs: Any) -> Any:
-        """Checks if the given path is a valid type and returns the file if valid.
-
-        Args:
-            file: The path.
-
-        Returns:
-            The file or None.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-
-        if file.is_file():
-            try:
-                file = h5py.File(file)
-                if t_name in file.attrs and cls.FILE_TYPE == file.attrs[t_name]:
-                    return cls(file=file, **kwargs)
-                else:
-                    return cls.get_version_class(TriNumberVersion(0, 1, 0)).new_validated(file)
-            except OSError:
-                return None
-        else:
-            return None
-
-    @new_validated.register
-    @classmethod
-    def _new_validated(cls, file: str, **kwargs: Any) -> Any:
-        """Checks if the given path is a valid type and returns the file if valid.
-
-        Args:
-            file: The path.
-
-        Returns:
-            The file or None.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-        file = pathlib.Path(file)
-
-        if file.is_file():
-            try:
-                file = h5py.File(file)
-                if t_name in file.attrs and cls.FILE_TYPE == file.attrs[t_name]:
-                    return cls(file=file, **kwargs)
-                else:
-                    return cls.get_version_class(TriNumberVersion(0, 1, 0)).new_validated(file)
-            except OSError:
-                return None
-        else:
-            return None
-
-    @new_validated.register
-    @classmethod
-    def _new_validated(cls, file: HDF5File, **kwargs: Any) -> Any:
-        """Checks if the given file is a valid type and returns the file if valid.
-
-        Args:
-            file: The file.
-
-        Returns:
-            The file or None.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-        file = file._file
-        if t_name in file.attrs and cls.FILE_TYPE == file.attrs[t_name]:
-            return cls(file=file, **kwargs)
-        else:
-            return cls.get_version_class(TriNumberVersion(0, 1, 0)).new_validated(file)
-
-    @new_validated.register
-    @classmethod
-    def _new_validated(cls, file: h5py.File, **kwargs: Any) -> Any:
-        """Checks if the given file is a valid type and returns the file if valid.
-
-        Args:
-            file: The file.
-
-        Returns:
-            The file or None.
-        """
-        t_name = cls.default_map.attribute_names["file_type"]
-        if t_name in file.attrs and cls.FILE_TYPE == file.attrs[t_name]:
-            return cls(file=file, **kwargs)
-        else:
-            return cls.get_version_class(TriNumberVersion(0, 1, 0)).new_validated(file)
+    FILE_TYPE: str = "NK_EEG"
+    default_map: HDF5Map = HDF5NKMap()
 
     @classmethod
     def get_version_from_file(cls, file: pathlib.Path | str | h5py.File) -> Version:
