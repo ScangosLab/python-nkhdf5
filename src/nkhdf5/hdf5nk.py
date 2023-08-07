@@ -2,7 +2,7 @@
 A HDF5 file which contains data for XLTEK EEG data.
 """
 # Package Header #
-from ..header import *
+from .header import *
 
 
 # Header #
@@ -17,6 +17,7 @@ __email__ = __email__
 import pathlib
 from typing import Any
 from typing import Union
+from typing import Mapping
 
 import h5py
 from baseobjects.functions import singlekwargdispatch
@@ -39,23 +40,23 @@ from hdf5objects.hdf5bases import HDF5Map
 # Definitions #
 # Classes #
 class NKElectricalSeriesMap(ElectricalSeriesMap):
-     """A base outline which defines an Electrical Series for Nihon Kohden system."""
+    """A base outline which defines an Electrical Series for Nihon Kohden system."""
 
     # TODO: Create ChannelAxisMap, similar to TimeAxisMap, but holds all relevant
     # channel information (names, anatomical locations, coordinates, etc).
-     default_attribute_names: Mapping[str, str] = ElectricalSeriesMap.default_attribute_names | {
-             "filter_lowpass": "filter_lowpass",
-             "filter_highpass": "filter_highpass",
-             "channel_type": "channel_type",
-             "channel_name": "channel_name",
-             "channel_count": "channel_count"}
+    default_attribute_names: Mapping[str, str] = (ElectricalSeriesMap.default_attribute_names | {
+        "filter_lowpass": "filter_lowpass",
+        "filter_highpass": "filter_highpass",
+        "channel_type": "channel_type",
+        "channel_name": "channel_name",
+        "channel_count": "channel_count"})
 
-    default_attributes: Mapping[str, Any] = ElectricalSeriesMap.default_attributes | {
-             "filter_lowpass": 0,
-             "filter_highpass": 0,
-             "channel_type": h5py.Empty("str"),
-             "channel_name": h5py.Empty("str"),
-             "channel_count": 0}
+    default_attributes: Mapping[str, Any] = (ElectricalSeriesMap.default_attributes | {
+        "filter_lowpass": 0,
+        "filter_highpass": 0,
+        "channel_type": h5py.Empty("str"),
+        "channel_name": h5py.Empty("str"),
+        "channel_count": 0})
 
 
 class HDF5NKMap(HDF5EEGMap):
@@ -75,25 +76,25 @@ class HDF5NKMap(HDF5EEGMap):
             "data_scalpeeg": "scalpEEG",
             "data_ekg": "EKG",
             "data_ttl": "DCChannel"
-    }
+            }
     default_maps = {
-        "data_ieeg": NKElectricalSeriesMap(
-            attributes={"units": "microvolts"},
-            object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
-        ),
-        "data_scalpeeg": NKElectricalSeriesMap(
-            attributes={"units": "microvolts"},
-            object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
-        ),
-        "data_ekg": NKElectricalSeriesMap(
-            attributes={"units": "microvolts"},
-            object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
-        ),
-        "data_ttl": NKElectricalSeriesMap(
-            attributes={"units": "microvolts"},
-            object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
-        ),
-    }
+            "data_ieeg": NKElectricalSeriesMap(
+                attributes={"units": "microvolts"},
+                object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
+                ),
+            "data_scalpeeg": NKElectricalSeriesMap(
+                attributes={"units": "microvolts"},
+                object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
+                ),
+            "data_ekg": NKElectricalSeriesMap(
+                attributes={"units": "microvolts"},
+                object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
+                ),
+            "data_ttl": NKElectricalSeriesMap(
+                attributes={"units": "microvolts"},
+                object_kwargs={"shape": (0, 0), "maxshape": (None, None)},
+                ),
+            }
 
 
 class HDF5NK(HDF5EEG):
