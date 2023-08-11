@@ -9,41 +9,17 @@ A basic example, which introduces Maps and file creation/reading.
 import pathlib
 
 # Third-Party Packages #
-from hdf5objects import FileMap, DatasetMap
-from hdf5objects import HDF5File
 from nkhdf5 import hdf5nk
 
 import numpy as np
 
-
-# Definitions #
-# Classes #
-class ExampleFileMap(FileMap):
-    """A map for an example file."""
-
-    # Define Attributes
-    default_attribute_names = {"python_name": "File Name"}
-    default_attributes = {"python_name": "Timmy"}
-
-    # Define Child Maps
-    default_map_names = {"data": "Main Array"}
-    default_maps = {"data": DatasetMap(shape=(0, 0), maxshape=(None, None))}
-
-
-class ExampleFile(HDF5File):
-    """An example file."""
-
-    # Set the default map of this object
-    default_map = ExampleFileMap()
-
+HDF5NK = hdf5nk.HDF5NK_0_1_0
 
 # Main #
 if __name__ == "__main__":
     # Parameters #
-    file_name = "DIA_first_example_file.h5"
+    file_name = "examples/DIA_first_example_file.h5"
     out_path = pathlib.Path.cwd() / file_name  # The file path as a pathlib Path
-
-    raw_data = np.random.rand(10, 10)
 
     # Start of the actual code.
 
@@ -56,38 +32,23 @@ if __name__ == "__main__":
     # Check if the File Exists
     # These should print false because the file has not been made.
     print(f"File Exists: {out_path.is_file()}")
-    print(f"File is Openable: {ExampleFile.is_openable(out_path)}")
+    print(f"File is Openable: {HDF5NK.is_openable(out_path)}")
     print("")
 
     # Create the file #
     # The create kwarg determines if the file will be created.
     # The construct kwarg determines if the file's structure will be built, which is highly suggested for SWMR.
-    with hdf5nk.HDF5NK(file=out_path, mode="a", create=True, construct=True) as file:
-        # Validate specifications were created
-        print(f"Attribute: {file.attributes['python_name'] == 'Timmy'}")
-        print(f"Data Shape: {file['data'].shape == (0, 0)}")
-        print("")
+    with HDF5NK(file=out_path, mode="a", create=True, construct=True) as file:
 
-        # Manipulate Data
-        print("Data Manipulation:")
-
-        file_data = file["data"]
-        print(f"Original Shape: {file_data.shape}")
-
-        # Set Data
-        file_data.resize((10, 10))
-        file_data[:, :] = raw_data
-        print(f"Shape After Resize: {file_data.shape}")
-
-        # Append
-        file_data.append(raw_data)
-        print(f"Shape After Append: {file_data.shape}")
-
+        """
+        Can print File attributes and dataset names as a test.
+        """
+        print("File was created and constructed by this point.")
     print("")
 
     # After Closing Check if the File Exists
     print(f"File Exists: {out_path.is_file()}")
-    print(f"File is Openable: {ExampleFile.is_openable(out_path)}")
+    print(f"File is Openable: {HDF5NK.is_openable(out_path)}")
     print("")
 
     # Open File
@@ -95,7 +56,7 @@ if __name__ == "__main__":
     # The load kwarg determines if the whole file structure will be loaded in. This is useful if you plan on looking at
     # everything in the file, but if load is False or not set it will load parts of the structure on demand which is
     # more efficient if you are looking at specific parts and not checking others.
-    with ExampleFile(file=out_path, load=True, swmr=True) as file:
+    with HDF5NK(file=out_path, load=True, swmr=True) as file:
         # Caching is on when in read mode.
         # In normal read mode, once data is loaded into cache it has to manually be told refresh the cache.
         # In SWMR mode the cache will clear and get the values from the file again at a predefined interval.
@@ -115,8 +76,3 @@ if __name__ == "__main__":
         file.timed_all_caching()  # Caches will clear at regular intervals.
         file.set_all_lifetimes(2.0)  # The sets lifetime of the cache before it will clear in seconds.
         print("")
-
-        # Check Data
-        print(f"Attribute: {file.attributes['python_name'] == 'Timmy'}")
-        file_data = file["data"]
-        print(f"Shape: {file_data.shape}")
