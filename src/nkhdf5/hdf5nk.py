@@ -1,5 +1,5 @@
-"""hdf5xltek.py
-A HDF5 file which contains data for XLTEK EEG data.
+"""hdf5nk.py
+A HDF5 file which contains data for Nihon-Kohden EEG data.
 """
 # Package Header #
 from .header import *
@@ -39,6 +39,9 @@ from hdf5objects.hdf5bases import HDF5Map
 
 # Definitions #
 # Classes #
+class ChannelAxisMap():
+    pass
+
 class NKElectricalSeriesMap(ElectricalSeriesMap):
     """A base outline which defines an Electrical Series for Nihon Kohden system."""
 
@@ -47,15 +50,11 @@ class NKElectricalSeriesMap(ElectricalSeriesMap):
     default_attribute_names: Mapping[str, str] = (ElectricalSeriesMap.default_attribute_names | {
         "filter_lowpass": "filter_lowpass",
         "filter_highpass": "filter_highpass",
-        "channel_type": "channel_type",
-        "channel_name": "channel_name",
         "channel_count": "channel_count"})
 
     default_attributes: Mapping[str, Any] = (ElectricalSeriesMap.default_attributes | {
         "filter_lowpass": 0,
         "filter_highpass": 0,
-        "channel_type": h5py.Empty("str"),
-        "channel_name": h5py.Empty("str"),
         "channel_count": 0})
 
 
