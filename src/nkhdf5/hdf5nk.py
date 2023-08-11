@@ -136,3 +136,9 @@ class HDF5NK(HDF5EEG):
             return TriNumberVersion(file.attrs[v_name])
         elif cls.get_version_class(TriNumberVersion(0, 1, 0)).validate_file_type(file):
             return TriNumberVersion(0, 1, 0)
+
+
+class HDF5NK_0_1_0(HDF5NK):
+    """A HDF5 file which contains data for Nihon Kohden EEG data (v0.1.0)."""
+    VERSION: Version = TriNumberVersion(0, 1, 0)
+    default_map: HDF5Map = HDF5NKMap()
