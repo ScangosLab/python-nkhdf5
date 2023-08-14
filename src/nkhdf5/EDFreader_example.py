@@ -2,12 +2,13 @@
 Saves a metadata catalog csv of filename, start date, end date, shortened filename and file
 lenght to the same directory level as the EDF directory provided.
 '''
+
+# Imports #
+# Standard Libraries #
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import dill as pickle
+
 
 import subprocess
 
@@ -23,10 +24,11 @@ dc_chan   = ['DC']
 ekg_chan  = ['EKG']
 emg_chan  = ['EMG']
 
+EDF_PATH = '/data_store0/presidio/nihon_kohden/PR05/PR05/'
+
 #Gets list of all EDF files in patient's main folder 
 def get_edf_list(edf_dir):
     edf_list = sorted(filter(lambda x: True if 'edf' in x else False, os.listdir(edf_dir)))
-    
     return edf_list
 
 #Gets metadeta and timeseries of EDF file within extracted list
@@ -87,3 +89,7 @@ def edf_reader(edf_dir, edf_fn):
     data_dic, time = raw[:,:]
         
     return att_dic, data_dic
+
+print('EDF reader is ready')
+test_filename = get_edf_list(EDF_PATH)
+print(edf_reader(EDF_PATH,test_filename[10]))
