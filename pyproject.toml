@@ -54,6 +54,9 @@ myst-parser = {version = ">=0.16.1"}
 [tool.poetry.scripts]
 python-nkhdf5 = "nkhdf5.__main__:main"
 
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.14.0"
+
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 tests = ["tests", "*/tests"]
