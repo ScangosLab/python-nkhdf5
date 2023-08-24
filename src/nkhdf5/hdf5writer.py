@@ -45,11 +45,37 @@ if __name__ == "__main__":
 
     # Create the file #
     with HDF5NK(file=out_path, mode="a", create=True, construct=True) as file:
+        file.attributes['subject_id'] = patient_id
+        file.attributes['start'] = edf_contents[0]["edf_start"]
+        file.attributes['end'] = edf_contents[0]["edf_end"]
+
+        # Add data for iEEG channels 
         file["data_ieeg"].attributes["filter_lowpass"]  = edf_contents[0]["edf_lowpass"]
         file["data_ieeg"].attributes["filter_highpass"] = edf_contents[0]["edf_highpass"]
         file["data_ieeg"].attributes["channel_count"]   = occurance(edf_contents[0]["edf_chantype"],"intracranial EEG")
         file["data_ieeg"].axes[0]['time_axis'].attrs['sample_rate'] = edf_contents[0]["edf_sfreq"]
         file["data_ieeg"].axes[0]['time_axis'].attrs['time_zone'] = edf_contents[0]["edf_timezone"]
+
+        # Add data for scalp EEG channels
+        file["data_scalpeeg"].attributes["filter_lowpass"]  = edf_contents[0]["edf_lowpass"]
+        file["data_scalpeeg"].attributes["filter_highpass"] = edf_contents[0]["edf_highpass"]
+        file["data_scalpeeg"].attributes["channel_count"]   = occurance(edf_contents[0]["edf_chantype"],"scalp EEG")
+        file["data_scalpeeg"].axes[0]['time_axis'].attrs['sample_rate'] = edf_contents[0]["edf_sfreq"]
+        file["data_scalpeeg"].axes[0]['time_axis'].attrs['time_zone'] = edf_contents[0]["edf_timezone"]
+
+        # Add data for EKG channels
+        file["data_ekg"].attributes["filter_lowpass"]  = edf_contents[0]["edf_lowpass"]
+        file["data_ekg"].attributes["filter_highpass"] = edf_contents[0]["edf_highpass"]
+        file["data_ekg"].attributes["channel_count"]   = occurance(edf_contents[0]["edf_chantype"],"EKG")
+        file["data_ekg"].axes[0]['time_axis'].attrs['sample_rate'] = edf_contents[0]["edf_sfreq"]
+        file["data_ekg"].axes[0]['time_axis'].attrs['time_zone'] = edf_contents[0]["edf_timezone"]
+
+         # Add data for DC channels
+        file["data_ttl"].attributes["filter_lowpass"]  = edf_contents[0]["edf_lowpass"]
+        file["data_ttl"].attributes["filter_highpass"] = edf_contents[0]["edf_highpass"]
+        file["data_ttl"].attributes["channel_count"]   = occurance(edf_contents[0]["edf_chantype"],"TTL")
+        file["data_ttl"].axes[0]['time_axis'].attrs['sample_rate'] = edf_contents[0]["edf_sfreq"]
+        file["data_ttl"].axes[0]['time_axis'].attrs['time_zone'] = edf_contents[0]["edf_timezone"]
 
 
 """End of code
