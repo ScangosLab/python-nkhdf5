@@ -66,8 +66,10 @@ def edf_reader(edf_dir, edf_fn):
         chantype[emg_idx[i]] = 'EMG'
     for i in range(len(scalp_idx)):
         chantype[scalp_idx[i]] = 'scalp EEG'
+    
+    data_array, time = raw[:,:]
 
-    att_dic = {
+    edf_dic = {
         'edf_fn': edf_fn,
         'edf_path': os.path.join(edf_dir, edf_fn),
         'edf_start': edf_start.replace(tzinfo=None), 
@@ -82,11 +84,10 @@ def edf_reader(edf_dir, edf_fn):
         'edf_channame': raw.info['ch_names'],
         'edf_chantype': chantype,
         'edf_axis': list(['chan','sample']),
+        'edf_data': data_array,
+        'edf_time_axis': time
     }
-    
-    data_dic, time = raw[:,:]
         
-    return att_dic, data_dic
+    return edf_dic
 
 print('EDF reader is ready')
-
