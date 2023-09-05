@@ -106,4 +106,4 @@ def edf_reader(edf_dir, edf_fn):
         
     return edf_dic
 
-print('EDF reader is ready')
+print('EDF reader is ready to use')
