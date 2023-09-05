@@ -732,9 +732,9 @@ proxyarrays = "^0.5.1"
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/FongAnthonyM/python-hdf5objects.git"
-reference = "v0.4.3"
-resolved_reference = "e6bdce78d25ff7045e55b5c13dac100fb782660f"
+url = "git@github.com:FongAnthonyM/python-hdf5objects.git"
+reference = "v0.4.3-additional_channel_level_axes_maps"
+resolved_reference = "49f7dcc9bf758dc9c18803753c6f51b5173d42d5"
 
 [[package]]
 name = "identify"
@@ -2242,4 +2242,4 @@ tests-strict = ["codecov (==2.0.15)", "pytest (==4.6.0)", "pytest (==4.6.0)", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c944d35da38c59618d5905e7710c46cf4d9de86da6a8413a276146c867961d71"
+content-hash = "65eb0883220033932ffe2e4edfaf18f16eaa2d670ab2ddc4184ad10b7abaa340"

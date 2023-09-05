@@ -19,7 +19,7 @@ import re
 from datetime import datetime, timedelta
 
 #Define common labels for channel type
-ieeg_chan = ['OFC', 'SGC', 'R A', 'L A', 'R H', 'L H', 'VC']
+ieeg_chan = ['OFC', 'SGC', 'RA', 'LA', 'RH', 'LH', 'VC']
 dc_chan   = ['DC']
 ekg_chan  = ['EKG']
 emg_chan  = ['EMG']
@@ -29,16 +29,17 @@ def get_edf_list(edf_dir):
     edf_list = sorted(filter(lambda x: True if 'edf' in x else False, os.listdir(edf_dir)))
     return edf_list
 
-#Gets metadeta and timeseries of EDF file within extracted list
+#Extracts metadata, timeseries and raw data from EDF file
 def edf_reader(edf_dir, edf_fn):
 
+    #Read EDF file
     raw = mne.io.read_raw_edf(os.path.join(edf_dir, edf_fn))
         
     edf_len = timedelta(seconds=len(raw)/raw.info['sfreq']) # seconds
     edf_start = raw.info['meas_date']
     edf_end = edf_start + edf_len
-    ch_names_clean = [ch.split('-')[0].split('POL ')[1] for ch in raw.ch_names]
-    
+    ch_names_clean = [ch.split('-')[0].split('POL ')[1].replace(" ", "") for ch in raw.ch_names]
+    #Assign channel type
     def find_indices(lst, condition):
         return [i for i, elem in enumerate(lst) if condition(elem)]
     
@@ -54,7 +55,7 @@ def edf_reader(edf_dir, edf_fn):
     not_scalp_idx = ieeg_idx + dc_idx + ekg_idx + emg_idx
     scalp_idx = list(set(list(range(len(ch_names_clean)))) - set(not_scalp_idx))
     
-    chantype = ch_names_clean
+    chantype = ch_names_clean.copy()
 
     for i in range(len(ieeg_idx)):
         chantype[ieeg_idx[i]] = 'intracranial EEG'
@@ -66,7 +67,21 @@ def edf_reader(edf_dir, edf_fn):
         chantype[emg_idx[i]] = 'EMG'
     for i in range(len(scalp_idx)):
         chantype[scalp_idx[i]] = 'scalp EEG'
-    
+
+    #Assign channel labels
+    def get_channel_labels(all_labels):
+        old_list = []
+        new_list = []
+        for i in range(len(all_labels)):
+            old_list.append(re.sub("[A-Za-z]+", lambda ele: "" + ele[0] + " ", all_labels[i]))
+        old_list = [x.split(" ") for x in old_list]
+        for i in range(len(old_list)):
+            new_list.append(tuple(old_list[i]))
+        return new_list
+
+    channel_labels = get_channel_labels(ch_names_clean)
+
+    #Extract raw data and timeseries
     data_array, time = raw[:,:]
 
     edf_dic = {
@@ -81,11 +96,12 @@ def edf_reader(edf_dir, edf_fn):
         'edf_lowpass': raw.info['lowpass'],
         'edf_highpass': raw.info['highpass'],
         'edf_nchan': raw.info['nchan'],
-        'edf_channame': raw.info['ch_names'],
+        'edf_raw_chanlabs': raw.info['ch_names'],
         'edf_chantype': chantype,
         'edf_axis': list(['chan','sample']),
         'edf_data': data_array,
-        'edf_time_axis': time
+        'edf_time_axis': time,
+        'edf_channellabel_axis': channel_labels
     }
         
     return edf_dic

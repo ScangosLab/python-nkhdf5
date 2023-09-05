@@ -22,7 +22,7 @@ Changelog = "https://github.com/akhambhati/python-nkhdf5/releases"
 python = "^3.10"
 click = ">=8.0.1"
 proxyarrays = {git = "ssh://git@github.com/FongAnthonyM/python-proxyarrays.git", rev = "v0.5.1"}
-hdf5objects = {git = "ssh://git@github.com/FongAnthonyM/python-hdf5objects.git", rev = "v0.4.3"}
+hdf5objects = {git = "git@github.com:FongAnthonyM/python-hdf5objects.git", rev = "v0.4.3-additional_channel_level_axes_maps"}
 
 
 [tool.poetry.dev-dependencies]
