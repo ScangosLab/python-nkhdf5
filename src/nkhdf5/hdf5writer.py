@@ -43,13 +43,16 @@ if __name__ == "__main__":
     print(bm_edfs)
     print("")
     
+    #test with single file
+
     ## Start of actual code, loop edf files
     for i in range(len(bm_edfs)):
         edf_contents = edf_reader(edf_path, bm_edfs[i])
         date_string  = edf_contents["edf_start"].strftime("%Y%m%d")
         time_string  = edf_contents["edf_start"].strftime("%H%M")
+        start_rec    = time.mktime(edf_contents["edf_start"].timetuple())*1e9 #unix epoch time
         file_name    = f"sub-{patient_id}_ses-stage1_task-continuous_acq-{date_string}_run-{time_string}_ieeg.h5"
-        out_path     = pathlib.Path("/data_store0/presidio/nihon_kohden/PR05/PR05_hdf5/biomarker_20230906/", file_name)
+        out_path     = pathlib.Path("/data_store0/presidio/nihon_kohden/PR05/PR05_hdf5/biomarker_20230911/", file_name)
 
         ### Extract raw data by channel type
         ieeg_array = np.array([k for k,v in zip(edf_contents['edf_data'], edf_contents['edf_chantype']) if v == 'intracranial EEG']).T
@@ -57,8 +60,16 @@ if __name__ == "__main__":
         ekg_array = np.array([k for k,v in zip(edf_contents['edf_data'], edf_contents['edf_chantype']) if v == 'EKG']).T
         ttl_array = np.array([k for k,v in zip(edf_contents['edf_data'], edf_contents['edf_chantype']) if v == 'TTL']).T
 
-        ### Extract time and convert to nanoseconds 
+        ### Extract raw time and convert to absolute timestamps (nanoseconds) 
         time_array = np.array((edf_contents["edf_time_axis"]*1e9).astype(int))
+
+        def get_abs_timestamps(nanostamps_array):
+            abs_timestamps = []
+            for i in range(len(nanostamps_array)):
+                abs_timestamps.append(start_rec+nanostamps_array[i])
+            return abs_timestamps
+
+        new_time_array = np.array(get_abs_timestamps(time_array))
 
         ### Extract channel labels by channel type
         chanlabs_ieeg_array = np.array([k for k,v in zip(edf_contents['edf_channellabel_axis'], edf_contents['edf_chantype']) if v == 'intracranial EEG'], dtype = h5py.special_dtype(vlen=str))
@@ -77,7 +88,7 @@ if __name__ == "__main__":
         f_obj.attributes["end"] = int(time.mktime(edf_contents["edf_end"].timetuple())*1e9)
     
         file_data_ieeg = f_obj["data_ieeg"]
-        file_data_ieeg.append(ieeg_array, component_kwargs={"timeseries": {"data": time_array}})
+        file_data_ieeg.append(ieeg_array, component_kwargs={"timeseries": {"data": new_time_array}})
         file_data_ieeg.axes[1]["channellabel_axis"].append(chanlabs_ieeg_array)
         file_data_ieeg.axes[1]["channelcoord_axis"].append(elecs_coor)
 
@@ -88,7 +99,7 @@ if __name__ == "__main__":
         file_data_ieeg.axes[0]['time_axis'].attrs['time_zone'] = edf_contents["edf_timezone"]
 
         file_data_scalpeeg = f_obj["data_scalpeeg"]
-        file_data_scalpeeg.append(scalpeeg_array, component_kwargs={"timeseries": {"data": time_array}})
+        file_data_scalpeeg.append(scalpeeg_array, component_kwargs={"timeseries": {"data": new_time_array}})
         file_data_scalpeeg.axes[1]["channellabel_axis"].append(chanlabs_scalpeeg_array)
 
         file_data_scalpeeg.attributes["filter_lowpass"]  = edf_contents["edf_lowpass"]
@@ -98,7 +109,7 @@ if __name__ == "__main__":
         file_data_scalpeeg.axes[0]['time_axis'].attrs['time_zone'] = edf_contents["edf_timezone"]
 
         file_data_ekg = f_obj["data_ekg"]
-        file_data_ekg.append(ekg_array, component_kwargs={"timeseries": {"data": time_array}})
+        file_data_ekg.append(ekg_array, component_kwargs={"timeseries": {"data": new_time_array}})
         file_data_ekg.axes[1]["channellabel_axis"].append(chanlabs_ekg_array)
 
         file_data_ekg.attributes["filter_lowpass"]  = edf_contents["edf_lowpass"]
@@ -108,7 +119,7 @@ if __name__ == "__main__":
         file_data_ekg.axes[0]['time_axis'].attrs['time_zone'] = edf_contents["edf_timezone"]
 
         file_data_ttl = f_obj["data_ttl"]
-        file_data_ttl.append(ttl_array, component_kwargs={"timeseries": {"data": time_array}})
+        file_data_ttl.append(ttl_array, component_kwargs={"timeseries": {"data": new_time_array}})
         file_data_ttl.axes[1]["channellabel_axis"].append(chanlabs_ttl_array)
 
         file_data_ttl.attributes["filter_lowpass"]  = edf_contents["edf_lowpass"]
