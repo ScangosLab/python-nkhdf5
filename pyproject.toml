@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-nkhdf5"
-version = "2023.07.20"
+version = "2024.01.03"
 description = "NKHDF5"
 authors = ["Ankit Khambhati <akhambhati@gmail.com>"]
 license = "Apache-2.0"
