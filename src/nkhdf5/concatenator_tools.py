@@ -18,9 +18,9 @@ import ast
 
 # Inputs #
 
-patient_id   = "PR05"
+patient_id   = "PR06"
 stage1_path  = "/data_store0/presidio/nihon_kohden/"
-tmp_path     = "nkhdf5/biomarker_20230911/"
+convert_edf_path = "nkhdf5/edf_to_hdf5/"
 
 # Custom Functions #
 
@@ -46,7 +46,7 @@ def concat_timeseries(h5_in_bm):
     data_array = []
     time_array = []
     for i in range(len(h5_in_bm)):
-        file_path = pathlib.Path(stage1_path,patient_id,tmp_path,h5_in_bm[i])
+        file_path = pathlib.Path(stage1_path,patient_id,convert_edf_path,h5_in_bm[i])
         file_obj = h5py.File(file_path, 'r')
         data_array = data_array + list(np.array(file_obj['intracranialEEG']))
         time_array = time_array + list(np.array(file_obj['intracranialEEG_time_axis']))
