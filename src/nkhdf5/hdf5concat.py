@@ -29,14 +29,14 @@ from concatenator_tools import timestamps_to_datetime, str_to_datetime, concat_t
 # Main #
 if __name__ == "__main__":
     ## Input Parameters 
-    patient_id   = "PR05"
-    stage1_path  = "/data_store0/presidio/nihon_kohden/"
-    tmp_path     = "nkhdf5/biomarker_20230911/"
-    bm_catalog = pd.read_csv("/data_store0/presidio/nihon_kohden/PR05/PR05_biomarker_rel_edfs.csv").drop(columns=['Unnamed: 0'])
+    patient_id       = "PR06"
+    stage1_path      = "/data_store0/presidio/nihon_kohden/"
+    convert_edf_path = "nkhdf5/edf_to_hdf5/"
+    bm_catalog = pd.read_csv(f"/data_store0/presidio/nihon_kohden/{patient_id}/{patient_id}_edf_biomarker_catalog.csv")
     rel_h5_files = bm_catalog['rel_h5_10min'].apply(ast.literal_eval)
 
     td = timedelta(minutes=6) #select time window to substract from start of biomarker survey
-    bm_end_time = pd.to_datetime(bm_catalog['survey_start'])
+    bm_end_time = pd.to_datetime(bm_catalog['SurveyStart'])
     bm_start_time = bm_end_time - td
 
     bm_end_datetime = str_to_datetime(bm_end_time)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
         bm_num = str(i + 1).zfill(4) 
         file_name = f"sub-{patient_id}_task-biomarker_{bm_num}_ieeg.h5"
-        out_path  = pathlib.Path("/data_store0/presidio/nihon_kohden/PR05/nkhdf5/biomarker_20320912", file_name)
+        out_path  = pathlib.Path(f"/data_store0/presidio/nihon_kohden/{patient_id}/nkhdf5/biomarker", file_name)
 
         ## Start of the actual code ##
         print("creating: ", file_name)
