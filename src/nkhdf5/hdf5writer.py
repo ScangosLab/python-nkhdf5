@@ -26,33 +26,35 @@ from edfreader import get_edf_list, edf_reader
 # Main #
 if __name__ == "__main__":
     ## Input Parameters 
-    patient_id   = "PR05"
+    patient_id   = "PR06"
     stage1_path  = "/data_store0/presidio/nihon_kohden/"
-    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat"
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat"
+    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
     edf_path      = pathlib.Path(stage1_path,patient_id,patient_id)
 
-    ## Extract list of edfs associated to biomarker periods
-    rel_edfs_file = pd.read_csv("/data_store0/presidio/nihon_kohden/PR05/PR05_biomarker_rel_edfs.csv")
+    ## Extract list of all edfs
+    edf_fn = get_edf_list(edf_path)
+
+    ## BM ONLY: Extract list of edfs associated to biomarker periods
+    rel_edfs_file = pd.read_csv(f"/data_store0/presidio/nihon_kohden/{patient_id}/{patient_id}_edf_biomarker_catalog.csv")
     rel_edfs = rel_edfs_file['rel_edfs_10min'].apply(ast.literal_eval)
     bm_edfs_tmp = []
     for i in range(len(rel_edfs)):
         bm_edfs_tmp = bm_edfs_tmp + rel_edfs[i]
     bm_edfs = list(pd.DataFrame(bm_edfs_tmp)[0].unique())
 
-    print("Converting to hdf5:")
-    print(bm_edfs)
-    print("")
-    
-    #test with single file
+    ## EDIT!!! Select correct list of edf files to convert
+    convert_to_h5 = [edf_fn[765], edf_fn[767]] #or bm_edfs
 
     ## Start of actual code, loop edf files
-    for i in range(len(bm_edfs)):
-        edf_contents = edf_reader(edf_path, bm_edfs[i])
+    for i in range(len(convert_to_h5)):
+        edf_contents = edf_reader(edf_path, convert_to_h5[i])
         date_string  = edf_contents["edf_start"].strftime("%Y%m%d")
         time_string  = edf_contents["edf_start"].strftime("%H%M")
         start_rec    = time.mktime(edf_contents["edf_start"].timetuple())*1e9 #unix epoch time
         file_name    = f"sub-{patient_id}_ses-stage1_task-continuous_acq-{date_string}_run-{time_string}_ieeg.h5"
-        out_path     = pathlib.Path("/data_store0/presidio/nihon_kohden/PR05/PR05_hdf5/biomarker_20230911/", file_name)
+        out_path     = pathlib.Path(f"/data_store0/presidio/nihon_kohden/{patient_id}/nkhdf5/edf_to_hdf5/", file_name)
 
         ### Extract raw data by channel type
         ieeg_array = np.array([k for k,v in zip(edf_contents['edf_data'], edf_contents['edf_chantype']) if v == 'intracranial EEG']).T
@@ -142,9 +144,13 @@ if __name__ == "__main__":
         #print("ttl data size: ", f_obj["data_ttl"].shape)
         #print("ttl time axis size: ", f_obj["data_ttl"].axes[0]["time_axis"].shape)
         #print("ttl channel labels axis size: ", f_obj["data_ttl"].axes[1]["channellabel_axis"].shape)
-        print(f"{bm_edfs[i]} saved as: ", file_name)
+        print(f"{convert_to_h5[i]} saved as: ", file_name)
         print("")
+        
+        f_obj.close()
 
+        print("Converting next file...")
+        print("")
     # After closing check if the file exists #
         #print(f"File Exists: {out_path.is_file()}")
         #print(f"File is Openable: {HDF5NK.is_openable(out_path)}")
