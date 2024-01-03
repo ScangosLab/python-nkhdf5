@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 #Define common labels for channel type
 ieeg_chan = ['OFC', 'SGC', 'RA', 'LA', 'RH', 'LH', 'VC']
 dc_chan   = ['DC']
-ekg_chan  = ['EKG']
+ekg_chan  = ['EKG', 'EOG'] #todo: create separate variables for EOG in the future, for now pooled with EKG
 emg_chan  = ['EMG']
 
 #Gets list of all EDF files in patient's main folder 
