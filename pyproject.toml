@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-nkhdf5"
-version = "2023.07.20"
+version = "2024.01.03"
 description = "NKHDF5"
 authors = ["Ankit Khambhati <akhambhati@gmail.com>"]
 license = "Apache-2.0"
@@ -21,7 +21,9 @@ Changelog = "https://github.com/akhambhati/python-nkhdf5/releases"
 [tool.poetry.dependencies]
 python = "^3.10"
 click = ">=8.0.1"
-hdf5objects = {path = "../../external/python-hdf5objects"}
+proxyarrays = {git = "git@github.com:FongAnthonyM/python-proxyarrays.git", rev = "v0.6.0"}
+hdf5objects = {git = "git@github.com:FongAnthonyM/python-hdf5objects.git", rev = "v0.5.0"}
+
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
@@ -51,6 +53,9 @@ myst-parser = {version = ">=0.16.1"}
 
 [tool.poetry.scripts]
 python-nkhdf5 = "nkhdf5.__main__:main"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.14.0"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
