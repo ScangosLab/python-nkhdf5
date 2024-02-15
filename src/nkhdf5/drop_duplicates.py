@@ -1,6 +1,6 @@
-"""hdf5concat_test.py
+"""drop_duplicates.py
 
-Creates new 6-min duration h5 file per single biomarker survey
+Fix biomarker recordings that have duplicated timestamps with no neural data
 
 """
 
@@ -24,7 +24,6 @@ from nkhdf5 import hdf5nk
 
 # Local Packages #
 HDF5NK = hdf5nk.HDF5NK_0_1_0 
-from concatenator_tools import timestamps_to_datetime, str_to_datetime, concat_timeseries
 
 # Main #
 if __name__ == "__main__":
