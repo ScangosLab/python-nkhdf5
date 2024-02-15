@@ -28,7 +28,7 @@ HDF5NK = hdf5nk.HDF5NK_0_1_0
 # Main #
 if __name__ == "__main__":
     ## Input Parameters 
-    patient_id       = "PR06"
+    patient_id       = "PR04"
     PREPROC_PATH     = f"/data_store0/presidio/nihon_kohden/{patient_id}/nkhdf5/biomarker/"
 
     #Get list of files specifying folder path and file format as string
@@ -43,11 +43,11 @@ if __name__ == "__main__":
 
     #FOR PR06 ONLY: remove paths to recordings excluded after JF's annotations
     #recorded during stim:
-    file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0025_ieeg.h5")
+    #file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0025_ieeg.h5")
     #no neural data:
-    file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0034_ieeg.h5")
+    #file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0034_ieeg.h5")
     #recorded during stim:
-    file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0035_ieeg.h5")
+    #file_paths.remove(f"{PREPROC_PATH}sub-PR06_task-biomarker_0035_ieeg.h5")
 
     ##Loop through each biomarker recording:    
     for i in range(len(file_paths)):
