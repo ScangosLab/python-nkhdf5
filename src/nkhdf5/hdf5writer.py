@@ -26,15 +26,15 @@ from edfreader import get_edf_list, edf_reader
 # Main #
 if __name__ == "__main__":
     ## Input Parameters 
-    patient_id   = "PR06"
+    patient_id   = "PR03"
     stage1_path  = "/data_store0/presidio/nihon_kohden/"
-    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat"
-    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
-    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat" #PR04 and PR05
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
+    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
     edf_path      = pathlib.Path(stage1_path,patient_id,patient_id)
 
     ## Extract list of all edfs
-    edf_fn = get_edf_list(edf_path)
+    #edf_fn = get_edf_list(edf_path)
 
     ## BM ONLY: Extract list of edfs associated to biomarker periods
     rel_edfs_file = pd.read_csv(f"/data_store0/presidio/nihon_kohden/{patient_id}/{patient_id}_edf_biomarker_catalog.csv")
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     bm_edfs = list(pd.DataFrame(bm_edfs_tmp)[0].unique())
 
     ## EDIT!!! Select correct list of edf files to convert
-    convert_to_h5 = [edf_fn[765], edf_fn[767]] #or bm_edfs
+    convert_to_h5 = bm_edfs #[edf_fn[765], edf_fn[767]] or bm_edfs
 
     ## Start of actual code, loop edf files
     for i in range(len(convert_to_h5)):

@@ -1,4 +1,4 @@
-"""hdf5concat_test.py
+"""hdf5concat.py
 
 Creates new 6-min duration h5 file per single biomarker survey
 
