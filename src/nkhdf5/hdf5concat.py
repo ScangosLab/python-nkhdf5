@@ -1,6 +1,6 @@
-"""hdf5concat_test.py
+"""hdf5concat.py
 
-Creates new 6-min duration h5 file per single biomarker survey
+Creates new 6-min duration h5 file preceding each biomarker survey, accounts for duplicated timestamps
 
 """
 
@@ -24,19 +24,27 @@ from nkhdf5 import hdf5nk
 
 # Local Packages #
 HDF5NK = hdf5nk.HDF5NK_0_1_0 
-from concatenator_tools import timestamps_to_datetime, str_to_datetime, concat_timeseries
+from concatenator_tools import FilesForBiomarker, timestamps_to_datetime, str_to_datetime, concat_timeseries
 
 # Main #
 if __name__ == "__main__":
-    ## Input Parameters 
-    patient_id       = "PR06"
+    # Input Parameters  
+    patient_id       = "PR03"
+    ## main directory of Presidio Stage 1 data
     stage1_path      = "/data_store0/presidio/nihon_kohden/"
+    ## subdirectory for HDF5 files created from raw EDFs
     convert_edf_path = "nkhdf5/edf_to_hdf5/"
-    bm_catalog = pd.read_csv(f"/data_store0/presidio/nihon_kohden/{patient_id}/{patient_id}_edf_biomarker_catalog.csv")
-    rel_h5_files = bm_catalog['rel_h5_10min'].apply(ast.literal_eval)
+    ## custom csv file indicating subset of HDF5 files that will be concatenated for each biomarker survey
+    EDF_CATALOG = pd.read_csv(f"{stage1_path}{patient_id}/{patient_id}_edf_catalog.csv")
+    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}{patient_id}/clinical_scores/BiomarkerSurveys.csv")
+    BiomarkerSurveyTimes = pd.to_datetime(BIOMARKER_CATALOG['SurveyStart'])
 
-    td = timedelta(minutes=6) #select time window to substract from start of biomarker survey
-    bm_end_time = pd.to_datetime(bm_catalog['SurveyStart'])
+    FilesToConcat = FilesForBiomarker(10, 'HDF5', BiomarkerSurveyTimes, EDF_CATALOG)
+
+    ## select time window to substract from start of biomarker survey, indirectly setting duration of biomarker recording
+    ## if longer/shorter recordings are needed, adjust timedelta accordingly 
+    td = timedelta(minutes=6) 
+    bm_end_time = pd.to_datetime(bm_surveys['SurveyStart'])
     bm_start_time = bm_end_time - td
 
     bm_end_datetime = str_to_datetime(bm_end_time)
