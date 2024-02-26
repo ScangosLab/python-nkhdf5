@@ -30,13 +30,13 @@ from concatenator_tools import FilesForBiomarker, timestamps_to_datetime, str_to
 if __name__ == "__main__":
     # Input Parameters  
     patient_id       = "PR03"
-    ## main directory of Presidio Stage 1 data
-    stage1_path      = "/data_store0/presidio/nihon_kohden/"
-    ## subdirectory for HDF5 files created from raw EDFs
-    convert_edf_path = "nkhdf5/edf_to_hdf5/"
+    stage1_path = "/data_store0/presidio/nihon_kohden"
+    # Input/output directories
+    inpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/edf_to_hdf5")
+    outpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/biomarker")
     ## custom csv file indicating subset of HDF5 files that will be concatenated for each biomarker survey
-    EDF_CATALOG = pd.read_csv(f"{stage1_path}{patient_id}/{patient_id}_edf_catalog.csv")
-    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}{patient_id}/clinical_scores/BiomarkerSurveys.csv")
+    EDF_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/{patient_id}_edf_catalog.csv")
+    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
     BiomarkerSurveyTimes = pd.to_datetime(BIOMARKER_CATALOG['SurveyStart'])
 
     FilesToConcat = FilesForBiomarker(10, 'HDF5', BiomarkerSurveyTimes, EDF_CATALOG)
@@ -44,20 +44,16 @@ if __name__ == "__main__":
     ## select time window to substract from start of biomarker survey, indirectly setting duration of biomarker recording
     ## if longer/shorter recordings are needed, adjust timedelta accordingly 
     td = timedelta(minutes=6) 
-    bm_end_time = pd.to_datetime(bm_surveys['SurveyStart'])
+    bm_end_time = BiomarkerSurveyTimes
     bm_start_time = bm_end_time - td
 
     bm_end_datetime = str_to_datetime(bm_end_time)
     bm_start_datetime = str_to_datetime(bm_start_time)
 
-    ##Choose example to process
-    #example_idx = 0
-    #h5_files_bm = rel_h5_files[example_idx]
-
     ## Extract data from h5 files associated to BM and concatenate timeseries
     ##Loop through each biomarker period    
-    for i in range(len(rel_h5_files)):
-        concat_data = concat_timeseries(rel_h5_files[i])
+    for i in range(len(FilesToConcat)):
+        concat_data = concat_timeseries(inpath, FilesToConcat[i])
     ##Get concatenated timestamps as datetime objects
         timestamps_as_datetime = timestamps_to_datetime(concat_data['time_array'])
     
@@ -75,7 +71,7 @@ if __name__ == "__main__":
 
         bm_num = str(i + 1).zfill(4) 
         file_name = f"sub-{patient_id}_task-biomarker_{bm_num}_ieeg.h5"
-        out_path  = pathlib.Path(f"/data_store0/presidio/nihon_kohden/{patient_id}/nkhdf5/biomarker", file_name)
+        out_path  = pathlib.Path(outpath, file_name)
 
         ## Start of the actual code ##
         print("creating: ", file_name)
