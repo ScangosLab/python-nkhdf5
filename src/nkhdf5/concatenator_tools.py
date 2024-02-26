@@ -12,7 +12,7 @@ import datetime
 from datetime import timedelta
 import time
 import h5py
-import scipy.io
+#import scipy.io
 import os
 import ast
 
@@ -20,7 +20,7 @@ import ast
 
 patient_id   = "PR03"
 stage1_path  = "/data_store0/presidio/nihon_kohden/"
-convert_edf_path = "nkhdf5/edf_to_hdf5/"
+raw_hdf5_path = "nkhdf5/edf_to_hdf5/"
 
 # Custom Functions #
 
@@ -33,6 +33,7 @@ def FilesForBiomarker(FinalDuration, FileFormat, SurveyTimes, DataFrame):
     times2 = DataFrame.loc[:,['edf_name', 'h5_name', 'edf_end']].rename(columns={'edf_end':'edf_start'})
     TargetTimes = pd.concat([times1, times2], ignore_index=True)
     TargetTimes = TargetTimes.sort_values(by='edf_start').reset_index(drop=True)
+    TargetTimes['edf_start'] = pd.to_datetime(TargetTimes['edf_start'])
     for i in range(len(SurveyTimes)):
         mask = (TargetTimes['edf_start'] >= StartRec[i]) & (TargetTimes['edf_start'] <= SurveyTimes[i])
         if FileFormat == 'EDF':
@@ -59,11 +60,11 @@ def str_to_datetime(list_of_values):
 
 ##Concatenates timeseries given a list of h5 files associated to biomarker survey
 ##Also gets metadata shared by h5 files 
-def concat_timeseries(h5_in_bm):
+def concat_timeseries(indir, h5_in_bm):
     data_array = []
     time_array = []
     for i in range(len(h5_in_bm)):
-        file_path = pathlib.Path(stage1_path,patient_id,convert_edf_path,h5_in_bm[i])
+        file_path = pathlib.Path(indir, h5_in_bm[i])
         file_obj = h5py.File(file_path, 'r')
         data_array = data_array + list(np.array(file_obj['intracranialEEG']))
         time_array = time_array + list(np.array(file_obj['intracranialEEG_time_axis']))
