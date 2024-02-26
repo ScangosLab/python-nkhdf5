@@ -22,39 +22,36 @@ from nkhdf5 import hdf5nk
 # Local Packages #
 HDF5NK = hdf5nk.HDF5NK_0_1_0 
 from edfreader import get_edf_list, edf_reader
+from concatenator_tools import FilesForBiomarker
 
 # Main #
 if __name__ == "__main__":
     ## Input Parameters 
     patient_id   = "PR06"
-    stage1_path  = "/data_store0/presidio/nihon_kohden/"
-    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat"
-    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
-    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
+    stage1_path  = "/data_store0/presidio/nihon_kohden"
     edf_path      = pathlib.Path(stage1_path,patient_id,patient_id)
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
+    #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat" #PR04 and PR05
+    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
+    outpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/edf_to_hdf5")
+
+    EDF_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/{patient_id}_edf_catalog.csv")
+    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
+    BiomarkerSurveyTimes = pd.to_datetime(BIOMARKER_CATALOG['SurveyStart'])
 
     ## Extract list of all edfs
-    edf_fn = get_edf_list(edf_path)
-
-    ## BM ONLY: Extract list of edfs associated to biomarker periods
-    rel_edfs_file = pd.read_csv(f"/data_store0/presidio/nihon_kohden/{patient_id}/{patient_id}_edf_biomarker_catalog.csv")
-    rel_edfs = rel_edfs_file['rel_edfs_10min'].apply(ast.literal_eval)
-    bm_edfs_tmp = []
-    for i in range(len(rel_edfs)):
-        bm_edfs_tmp = bm_edfs_tmp + rel_edfs[i]
-    bm_edfs = list(pd.DataFrame(bm_edfs_tmp)[0].unique())
-
-    ## EDIT!!! Select correct list of edf files to convert
-    convert_to_h5 = [edf_fn[765], edf_fn[767]] #or bm_edfs
-
+    edf_all = get_edf_list(edf_path)
+    ## Extract list of edf associated to biomarker surveys
+    edf_for_bm = FilesForBiomarker(10, 'EDF', BiomarkerSurveyTimes, EDF_CATALOG)
+    
     ## Start of actual code, loop edf files
-    for i in range(len(convert_to_h5)):
+    for i in range(len(edf_for_bm)):
         edf_contents = edf_reader(edf_path, convert_to_h5[i])
         date_string  = edf_contents["edf_start"].strftime("%Y%m%d")
         time_string  = edf_contents["edf_start"].strftime("%H%M")
         start_rec    = time.mktime(edf_contents["edf_start"].timetuple())*1e9 #unix epoch time
         file_name    = f"sub-{patient_id}_ses-stage1_task-continuous_acq-{date_string}_run-{time_string}_ieeg.h5"
-        out_path     = pathlib.Path(f"/data_store0/presidio/nihon_kohden/{patient_id}/nkhdf5/edf_to_hdf5/", file_name)
+        out_path     = pathlib.Path(outpath, file_name)
 
         ### Extract raw data by channel type
         ieeg_array = np.array([k for k,v in zip(edf_contents['edf_data'], edf_contents['edf_chantype']) if v == 'intracranial EEG']).T
@@ -144,7 +141,7 @@ if __name__ == "__main__":
         #print("ttl data size: ", f_obj["data_ttl"].shape)
         #print("ttl time axis size: ", f_obj["data_ttl"].axes[0]["time_axis"].shape)
         #print("ttl channel labels axis size: ", f_obj["data_ttl"].axes[1]["channellabel_axis"].shape)
-        print(f"{convert_to_h5[i]} saved as: ", file_name)
+        print(f"{edf_for_bm[i]} saved as: ", file_name)
         print("")
         
         f_obj.close()
