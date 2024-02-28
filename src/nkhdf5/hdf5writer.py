@@ -1,10 +1,8 @@
 """hdf5writer.py
-# !! Contents within this block are managed by 'conda init' !!
+
+By providing a list of file paths, converts an EDF file to HDF5 file
 
 """
-
-# Package Header #
-#from .header import *
 
 # Standard Libraries #
 import pathlib
@@ -18,9 +16,9 @@ import ast
 
 # Third-Party Packages #
 from nkhdf5 import hdf5nk
+HDF5NK = hdf5nk.HDF5NK_0_1_0
 
 # Local Packages #
-HDF5NK = hdf5nk.HDF5NK_0_1_0 
 from edfreader import get_edf_list, edf_reader
 from concatenator_tools import FilesForBiomarker
 
@@ -32,12 +30,12 @@ if __name__ == "__main__":
     edf_path      = pathlib.Path(stage1_path,patient_id,patient_id)
     #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/PR03_elecs_all.mat" #PR03 only
     #imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/stereo_elecs_all.mat" #PR04 and PR05
-    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR06 only
+    imaging_path = f"/data_store2/imaging/subjects/{patient_id}/elecs/elecs_all.mat" #PR01 and PR06 
     outpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/edf_to_hdf5")
 
     EDF_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/{patient_id}_edf_catalog.csv")
-    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
-    BiomarkerSurveyTimes = pd.to_datetime(BIOMARKER_CATALOG['SurveyStart'])
+    BiomarkerSurveys = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
+    BiomarkerSurveyTimes = pd.to_datetime(BiomarkerSurveys['SurveyStart'])
 
     ## Extract list of all edfs
     edf_all = get_edf_list(edf_path)
@@ -46,7 +44,7 @@ if __name__ == "__main__":
     
     ## Start of actual code, loop edf files
     for i in range(len(edf_for_bm)):
-        edf_contents = edf_reader(edf_path, convert_to_h5[i])
+        edf_contents = edf_reader(edf_path, edf_for_bm[i])
         date_string  = edf_contents["edf_start"].strftime("%Y%m%d")
         time_string  = edf_contents["edf_start"].strftime("%H%M")
         start_rec    = time.mktime(edf_contents["edf_start"].timetuple())*1e9 #unix epoch time
@@ -127,20 +125,6 @@ if __name__ == "__main__":
         file_data_ttl.axes[0]['time_axis'].attrs['sample_rate'] = edf_contents["edf_sfreq"]
         file_data_ttl.axes[0]['time_axis'].attrs['time_zone'] = edf_contents["edf_timezone"]
 
-        #print("File after appending:")
-        #print("ieeg data size: ", f_obj["data_ieeg"].shape)
-        #print("ieeg time axis size: ", f_obj["data_ieeg"].axes[0]["time_axis"].shape)
-        #print("ieeg channel labels axis size: ", f_obj["data_ieeg"].axes[1]["channellabel_axis"].shape)
-        #print("ieeg channel coordinates axis size: ", f_obj["data_ieeg"].axes[1]["channelcoord_axis"].shape)
-        #print("scalp eeg data size: ", f_obj["data_scalpeeg"].shape)
-        #print("scalp eeg time axis size: ", f_obj["data_scalpeeg"].axes[0]["time_axis"].shape)
-        #print("scalp eeg channel labels axis size: ", f_obj["data_scalpeeg"].axes[1]["channellabel_axis"].shape)
-        #print("ekg data size: ", f_obj["data_ekg"].shape)
-        #print("ekg time axis size: ", f_obj["data_ekg"].axes[0]["time_axis"].shape)
-        #print("ekg channel labels axis size: ", f_obj["data_ekg"].axes[1]["channellabel_axis"].shape)
-        #print("ttl data size: ", f_obj["data_ttl"].shape)
-        #print("ttl time axis size: ", f_obj["data_ttl"].axes[0]["time_axis"].shape)
-        #print("ttl channel labels axis size: ", f_obj["data_ttl"].axes[1]["channellabel_axis"].shape)
         print(f"{edf_for_bm[i]} saved as: ", file_name)
         print("")
         
@@ -148,7 +132,7 @@ if __name__ == "__main__":
 
         print("Converting next file...")
         print("")
-    # After closing check if the file exists #
+        #After closing check if the file exists #
         #print(f"File Exists: {out_path.is_file()}")
         #print(f"File is Openable: {HDF5NK.is_openable(out_path)}")
         #print("")
