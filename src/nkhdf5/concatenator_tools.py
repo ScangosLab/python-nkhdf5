@@ -12,15 +12,8 @@ import datetime
 from datetime import timedelta
 import time
 import h5py
-#import scipy.io
 import os
 import ast
-
-# Inputs #
-
-#patient_id   = "PR03"
-#stage1_path  = "/data_store0/presidio/nihon_kohden/"
-#raw_hdf5_path = "nkhdf5/edf_to_hdf5/"
 
 # Custom Functions #
 
