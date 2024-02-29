@@ -18,9 +18,9 @@ import ast
 
 # Inputs #
 
-patient_id   = "PR03"
-stage1_path  = "/data_store0/presidio/nihon_kohden/"
-raw_hdf5_path = "nkhdf5/edf_to_hdf5/"
+#patient_id   = "PR03"
+#stage1_path  = "/data_store0/presidio/nihon_kohden/"
+#raw_hdf5_path = "nkhdf5/edf_to_hdf5/"
 
 # Custom Functions #
 
@@ -37,7 +37,9 @@ def FilesForBiomarker(FinalDuration, FileFormat, SurveyTimes, DataFrame):
     for i in range(len(SurveyTimes)):
         mask = (TargetTimes['edf_start'] >= StartRec[i]) & (TargetTimes['edf_start'] <= SurveyTimes[i])
         if FileFormat == 'EDF':
-            FilesForBiomarkerList.append(sorted(list(TargetTimes['edf_name'].loc[mask].unique())))
+            FilesOneBiomarker = sorted(list(TargetTimes['edf_name'].loc[mask].unique()))
+            for j in range(len(FilesOneBiomarker)):
+                FilesForBiomarkerList.append(FilesOneBiomarker[j])
         if FileFormat == 'HDF5':
             FilesForBiomarkerList.append(sorted(list(TargetTimes['h5_name'].loc[mask].unique())))
     return FilesForBiomarkerList
@@ -90,6 +92,20 @@ def concat_timeseries(indir, h5_in_bm):
     }
 
     return timeseries_dict
+
+##Drop duplicated timestamps with no neural data after concatenating timeseries
+def DropDuplicatedTimestamps(TimeArray, DataArray):
+    CleanTimes = pd.Series(TimeArray).drop_duplicates(keep="last")
+    CleanTimesIdx = list(CleanTimes.index.values)
+    RawData = pd.DataFrame(DataArray)
+    CleanData = RawData.iloc[CleanTimesIdx, :]
+
+    CleanedTimeseries = {"clean_time_array":CleanTimes.to_numpy(dtype="uint64"),
+                         "clean_data_array":CleanData.to_numpy(dtype="float32")}
+    del RawData
+    del CleanTimes
+    del CleanData
+    return CleanedTimeseries
 
 """
 

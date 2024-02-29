@@ -24,20 +24,20 @@ from nkhdf5 import hdf5nk
 
 # Local Packages #
 HDF5NK = hdf5nk.HDF5NK_0_1_0 
-from concatenator_tools import FilesForBiomarker, timestamps_to_datetime, str_to_datetime, concat_timeseries
+from concatenator_tools import FilesForBiomarker, timestamps_to_datetime, str_to_datetime, concat_timeseries, DropDuplicatedTimestamps
 
 # Main #
 if __name__ == "__main__":
     # Input Parameters  
-    patient_id       = "PR03"
+    patient_id       = "PR06"
     stage1_path = "/data_store0/presidio/nihon_kohden"
     # Input/output directories
     inpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/edf_to_hdf5")
     outpath = pathlib.Path(stage1_path, patient_id, "nkhdf5/biomarker")
-    ## custom csv file indicating subset of HDF5 files that will be concatenated for each biomarker survey
+    ## custom csv files, used to extract file paths for concatenation
     EDF_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/{patient_id}_edf_catalog.csv")
-    BIOMARKER_CATALOG = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
-    BiomarkerSurveyTimes = pd.to_datetime(BIOMARKER_CATALOG['SurveyStart'])
+    BiomarkerSurveys = pd.read_csv(f"{stage1_path}/{patient_id}/clinical_scores/BiomarkerSurveys.csv")
+    BiomarkerSurveyTimes = pd.to_datetime(BiomarkerSurveys['SurveyStart'])
 
     FilesToConcat = FilesForBiomarker(10, 'HDF5', BiomarkerSurveyTimes, EDF_CATALOG)
 
@@ -52,13 +52,13 @@ if __name__ == "__main__":
 
     ## Extract data from h5 files associated to BM and concatenate timeseries
     ##Loop through each biomarker period    
-    for i in range(len(FilesToConcat)):
-        concat_data = concat_timeseries(inpath, FilesToConcat[i])
+    for i in range(len(FilesToConcat)): 
+        concat_data = concat_timeseries(inpath, FilesToConcat[i]) 
     ##Get concatenated timestamps as datetime objects
         timestamps_as_datetime = timestamps_to_datetime(concat_data['time_array'])
     
-        start_rec = bm_start_datetime[i]
-        end_rec = bm_end_datetime[i]
+        start_rec = bm_start_datetime[i] 
+        end_rec = bm_end_datetime[i] 
         new_time_array = []
         new_data_array = []
         for j in range(len(timestamps_as_datetime)):
@@ -69,7 +69,9 @@ if __name__ == "__main__":
         new_time_array = np.array(new_time_array)
         new_data_array = np.array(new_data_array)
 
-        bm_num = str(i + 1).zfill(4) 
+        clean_arrays = DropDuplicatedTimestamps(new_time_array, new_data_array)
+
+        bm_num = str(i + 1).zfill(4)
         file_name = f"sub-{patient_id}_task-biomarker_{bm_num}_ieeg.h5"
         out_path  = pathlib.Path(outpath, file_name)
 
@@ -83,7 +85,7 @@ if __name__ == "__main__":
         f_obj.attributes["end"] = int(time.mktime(bm_end_datetime[i].timetuple())*1e9)
     
         file_data_ieeg = f_obj["data_ieeg"]
-        file_data_ieeg.append(new_data_array, component_kwargs={"timeseries": {"data": new_time_array}})
+        file_data_ieeg.append(clean_arrays['clean_data_array'], component_kwargs={"timeseries": {"data": clean_arrays['clean_time_array']}})
         file_data_ieeg.axes[1]["channellabel_axis"].append(concat_data["channellabel_axis"])
         file_data_ieeg.axes[1]["channelcoord_axis"].append(concat_data["channelcoord_axis"])
 
